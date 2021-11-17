@@ -1,4 +1,4 @@
-package post
+package post.solutions
 
 import org.scalacheck.Prop.{forAll, propBoolean}
 import org.scalacheck.Properties
