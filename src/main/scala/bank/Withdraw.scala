@@ -5,6 +5,6 @@ import java.util.UUID
 
 final case class Withdraw(
     clientId: UUID,
-    amount: Double,
+    amount: Amount,
     requestDate: LocalDate
 )

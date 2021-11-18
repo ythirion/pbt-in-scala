@@ -1,4 +1,4 @@
-package math.solutions
+package math.solution
 
 import math.Calculator.add
 import org.scalacheck.Prop.forAll

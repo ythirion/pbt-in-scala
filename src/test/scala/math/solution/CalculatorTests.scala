@@ -1,7 +1,7 @@
-package math.solutions
+package math.solution
 
 import math.Calculator.add
-import math.solutions.CalculatorTests.{random, times}
+import math.solution.CalculatorTests.{random, times}
 import org.scalatest.Assertion
 import org.scalatest.flatspec.AnyFlatSpec
 
