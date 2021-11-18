@@ -11,13 +11,16 @@ import java.time.LocalDate
 import java.util.UUID
 
 class AccountProperties extends AnyFlatSpec with Checkers with EitherValues {
+  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
+    PropertyCheckConfiguration(minSize = 10, maxDiscardedFactor = 20)
+
   private val positiveDouble = Gen.choose(0.01, 1_000_000)
 
   implicit val accountGenerator: Arbitrary[Account] = Arbitrary {
     for {
-      balance <- positiveDouble
+      balance <- Arbitrary.arbitrary[Double]
       isOverdraftAuthorized <- Arbitrary.arbitrary[Boolean]
-      maxWithdrawal <- positiveDouble
+      maxWithdrawal <- Arbitrary.arbitrary[Double]
     } yield Account(balance, isOverdraftAuthorized, maxWithdrawal)
   }
 
@@ -30,15 +33,17 @@ class AccountProperties extends AnyFlatSpec with Checkers with EitherValues {
   }
 
   "balance" should "be decremented at least from the withdraw amount" in {
-    check(forAll { (account: Account, command: Withdraw) =>
-      {
-        (withEnoughMoney(account, command) &&
-        withoutReachingMaxWithdrawal(account, command)) ==> {
-          val debitedAccount = AccountService.withdraw(account, command).value
-          debitedAccount.balance <= account.balance - command.amount.value
+    check(
+      forAll { (account: Account, command: Withdraw) =>
+        {
+          (withEnoughMoney(account, command) &&
+          withoutReachingMaxWithdrawal(account, command)) ==> {
+            val debitedAccount = AccountService.withdraw(account, command).value
+            debitedAccount.balance <= account.balance - command.amount.value
+          }
         }
       }
-    })
+    )
   }
 
   "balance" should "be decremented when insufficient balance but overdraft authorized" in {
@@ -52,8 +57,7 @@ class AccountProperties extends AnyFlatSpec with Checkers with EitherValues {
             debitedAccount.balance <= account.balance - command.amount.value
           }
         }
-      },
-      maxDiscardedFactor(20)
+      }
     )
   }
 
