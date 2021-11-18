@@ -1,10 +1,11 @@
 package bank.solution
 
+import bank.solution.WithdrawProperties._
 import bank.{Account, AccountService, Amount, Withdraw}
 import org.scalacheck.Prop.{forAll, propBoolean}
 import org.scalacheck.{Arbitrary, Gen}
-import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.{Assertion, EitherValues}
 import org.scalatestplus.scalacheck.Checkers
 
 import java.time.LocalDate
@@ -14,59 +15,49 @@ class WithdrawProperties extends AnyFlatSpec with Checkers with EitherValues {
   behavior of "Withdraw"
 
   "account balance" should "be decremented at least from the withdraw amount" in {
-    check(
-      forAll { (account: Account, command: Withdraw) =>
-        {
-          (withEnoughMoney(account, command) &&
-          withoutReachingMaxWithdrawal(account, command)) ==> {
-            val debitedAccount = AccountService.withdraw(account, command).value
-            debitedAccount.balance <= account.balance - command.amount.value
-          }
-        }
-      }
+    checkProperty(
+      (account, command) => {
+        withEnoughMoney(account, command) &&
+          withoutReachingMaxWithdrawal(account, command)
+      },
+      (account, command, debitedAccount) =>
+        debitedAccount.value.balance <= account.balance - command.amount.value
     )
   }
 
   "account balance" should "be decremented at least from the withdraw amount when insufficient balance but overdraft authorized" in {
-    check(forAll { (account: Account, command: Withdraw) =>
-      {
-        (withOverdraftAuthorized(account) &&
-        withInsufficientBalance(account, command) &&
-        withoutReachingMaxWithdrawal(account, command)) ==> {
-          val debitedAccount = AccountService.withdraw(account, command).value
-          debitedAccount.balance <= account.balance - command.amount.value
-        }
-      }
-    })
+    checkProperty(
+      (account, command) => {
+        withOverdraftAuthorized(account) &&
+          withInsufficientBalance(account, command) &&
+          withoutReachingMaxWithdrawal(account, command)
+      },
+      (account, command, debitedAccount) =>
+        debitedAccount.value.balance <= account.balance - command.amount.value
+    )
   }
 
   "withdraw" should "not be allowed when withdraw amount >= maxWithdrawal" in {
-    check(forAll { (account: Account, command: Withdraw) =>
-      {
-        reachingMaxWithdrawal(account, command) ==>
-          AccountService
-            .withdraw(account, command)
-            .left
-            .value
-            .startsWith("Amount exceeding your limit")
-      }
-    })
+    checkProperty(
+      (account, command) => reachingMaxWithdrawal(account, command),
+      (_, _, debitedAccount) =>
+        debitedAccount.left.value
+          .startsWith("Amount exceeding your limit")
+    )
   }
 
   "withdraw" should "not be allowed when insufficient balance and no overdraft" in {
-    check(forAll { (account: Account, command: Withdraw) =>
-      {
-        (withInsufficientBalance(account, command) &&
-        withoutOverdraftAuthorized(account) &&
-        withoutReachingMaxWithdrawal(account, command)) ==> {
-          AccountService
-            .withdraw(account, command)
-            .left
-            .value
-            .startsWith("Insufficient balance to withdraw")
-        }
+    checkProperty(
+      (account, command) => {
+        withInsufficientBalance(account, command) &&
+          withoutOverdraftAuthorized(account) &&
+          withoutReachingMaxWithdrawal(account, command)
+      },
+      (_, _, debitedAccount) => {
+        debitedAccount.left.value
+          .startsWith("Insufficient balance to withdraw")
       }
-    })
+    )
   }
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
@@ -88,6 +79,19 @@ class WithdrawProperties extends AnyFlatSpec with Checkers with EitherValues {
     } yield Withdraw(clientId, Amount.from(amount).get, requestDate)
   }
 
+  private def checkProperty(
+      when: (Account, Withdraw) => Boolean,
+      property: (Account, Withdraw, Either[String, Account]) => Boolean
+  ): Assertion = {
+    check(forAll { (account: Account, command: Withdraw) =>
+      when(account, command) ==> {
+        property(account, command, AccountService.withdraw(account, command))
+      }
+    })
+  }
+}
+
+object WithdrawProperties {
   private def withEnoughMoney(account: Account, command: Withdraw): Boolean =
     account.balance > command.amount.value
 
