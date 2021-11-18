@@ -57,7 +57,7 @@ class CalculatorTests extends AnyFlatSpec {
 
 object CalculatorTests {
   val random: Random = Random
-  val times = 100
+  val times          = 100
 
   // We should use the runProperty function to avoid duplication in our tests
   def runProperty(times: Int, f: Int => Assertion): Unit = {
