@@ -17,8 +17,8 @@ class WithdrawProperties extends AnyFlatSpec with Checkers with EitherValues {
   "account balance" should "be decremented at least from the withdraw amount" in {
     checkProperty(
       (account, command) => {
-        withEnoughMoney(account, command) &&
-          withoutReachingMaxWithdrawal(account, command)
+        (withEnoughMoney(account, command) &&
+          withoutReachingMaxWithdrawal(account, command))
       },
       (account, command, debitedAccount) =>
         debitedAccount.value.balance <= account.balance - command.amount.value

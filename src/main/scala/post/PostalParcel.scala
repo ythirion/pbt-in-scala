@@ -13,6 +13,8 @@ object PostalParcel {
   def calculateDeliveryCosts(
       postalParcel: Option[PostalParcel]
   ): Option[Double] = {
-    postalParcel.map(p => if (p.weight > maxWeight) maxDeliveryCosts else minDeliveryCosts)
+    postalParcel.map(p =>
+      if (p.weight > maxWeight) maxDeliveryCosts else minDeliveryCosts
+    )
   }
 }
