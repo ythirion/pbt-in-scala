@@ -1,3 +1,0 @@
-package bank
-
-object AccountProperties {}

@@ -3,7 +3,7 @@ package post
 final case class PostalParcel(weight: Double)
 
 object PostalParcel {
-  val maxWeight = 20.0
+  val maxWeight        = 20.0
   val maxDeliveryCosts = 4.99
   val minDeliveryCosts = 1.99
 
@@ -13,8 +13,6 @@ object PostalParcel {
   def calculateDeliveryCosts(
       postalParcel: Option[PostalParcel]
   ): Option[Double] = {
-    postalParcel.map(p =>
-      if (p.weight > maxWeight) maxDeliveryCosts else minDeliveryCosts
-    )
+    postalParcel.map(p => if (p.weight > maxWeight) maxDeliveryCosts else minDeliveryCosts)
   }
 }

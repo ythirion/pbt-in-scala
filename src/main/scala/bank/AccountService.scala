@@ -16,7 +16,7 @@ object AccountService {
       account: Account,
       withdrawAmount: Double
   ): Boolean =
-    withdrawAmount > account.maxWithdrawal
+    withdrawAmount >= account.maxWithdrawal
 
   private def exceedBalance(account: Account, withdrawAmount: Double): Boolean =
     withdrawAmount > account.balance && !account.isOverdraftAuthorized
