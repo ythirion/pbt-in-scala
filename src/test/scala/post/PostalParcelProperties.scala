@@ -1,0 +1,3 @@
+package post
+
+object PostalParcelProperties {}

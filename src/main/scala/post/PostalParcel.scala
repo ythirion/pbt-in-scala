@@ -1,6 +1,6 @@
 package post
 
-sealed abstract case class PostalParcel(weight: Double)
+final case class PostalParcel(weight: Double)
 
 object PostalParcel {
   val maxWeight = 20.0
@@ -8,13 +8,13 @@ object PostalParcel {
   val minDeliveryCosts = 1.99
 
   def fromDouble(weight: Double): Option[PostalParcel] =
-    if (weight > 0) Some(new PostalParcel(weight) {}) else None
+    if (weight > 0) Some(PostalParcel(weight)) else None
 
   def calculateDeliveryCosts(
       postalParcel: Option[PostalParcel]
   ): Option[Double] = {
-    postalParcel.map(p => {
+    postalParcel.map(p =>
       if (p.weight > maxWeight) maxDeliveryCosts else minDeliveryCosts
-    })
+    )
   }
 }
