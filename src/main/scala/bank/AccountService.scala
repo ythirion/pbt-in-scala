@@ -20,6 +20,4 @@ object AccountService {
 
   private def exceedBalance(account: Account, withdrawAmount: Double): Boolean =
     withdrawAmount > account.balance && !account.isOverdraftAuthorized
-
-  def isInvalid(amount: Double): Boolean = amount <= 0
 }
