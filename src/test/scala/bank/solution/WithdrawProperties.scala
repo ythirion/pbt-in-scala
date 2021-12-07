@@ -2,8 +2,9 @@ package bank.solution
 
 import bank.solution.WithdrawProperties._
 import bank.{Account, AccountService, Amount, Withdraw}
+import org.scalacheck.Arbitrary
+import org.scalacheck.Gen.posNum
 import org.scalacheck.Prop.{forAll, propBoolean}
-import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.{Assertion, EitherValues}
 import org.scalatestplus.scalacheck.Checkers
@@ -17,8 +18,8 @@ class WithdrawProperties extends AnyFlatSpec with Checkers with EitherValues {
   "account balance" should "be decremented at least from the withdraw amount" in {
     checkProperty(
       (account, command) => {
-        (withEnoughMoney(account, command) &&
-          withoutReachingMaxWithdrawal(account, command))
+        withEnoughMoney(account, command) &&
+          withoutReachingMaxWithdrawal(account, command)
       },
       (account, command, debitedAccount) =>
         debitedAccount.value.balance <= account.balance - command.amount.value
@@ -61,7 +62,7 @@ class WithdrawProperties extends AnyFlatSpec with Checkers with EitherValues {
   }
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
-    PropertyCheckConfiguration(minSize = 10, maxDiscardedFactor = 20)
+    PropertyCheckConfiguration(minSize = 10, maxDiscardedFactor = 30)
 
   implicit val accountGenerator: Arbitrary[Account] = Arbitrary {
     for {
@@ -74,7 +75,7 @@ class WithdrawProperties extends AnyFlatSpec with Checkers with EitherValues {
   implicit val withdrawCommandGenerator: Arbitrary[Withdraw] = Arbitrary {
     for {
       clientId    <- Arbitrary.arbitrary[UUID]
-      amount      <- Gen.choose(0.01, 1_000_000)
+      amount      <- posNum[Double]
       requestDate <- Arbitrary.arbitrary[LocalDate]
     } yield Withdraw(clientId, Amount.from(amount).get, requestDate)
   }
