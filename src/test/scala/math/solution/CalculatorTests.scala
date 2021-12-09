@@ -14,7 +14,7 @@ class CalculatorTests extends AnyFlatSpec {
     assert(add(1, 3) == 4)
   }
 
-  it should "return 3 when I add -1 to 3" in {
+  it should "return 2 when I add -1 to 3" in {
     assert(add(-1, 3) == 2)
   }
 
