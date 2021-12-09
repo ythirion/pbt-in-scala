@@ -1,8 +1,7 @@
 package quality.solution
 
-import org.scalacheck.Arbitrary
-import org.scalacheck.Gen.posNum
 import org.scalacheck.Prop.forAll
+import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatestplus.scalacheck.Checkers
 import quality.{Item, QualityManager}
@@ -12,13 +11,18 @@ import scala.collection.mutable.ListBuffer
 class QualityManagerImplementationProperties extends AnyFlatSpec with Checkers {
   implicit val itemGenerator: Arbitrary[Item] = Arbitrary {
     for {
-      name    <- Arbitrary.arbitrary[String]
-      sellIn  <- posNum[Int]
-      quality <- posNum[Int]
+      name <- Gen.oneOf(
+        "Aged Brie",
+        "Backstage passes to a TAFKAL80ETC concert",
+        "Sulfuras, Hand of Ragnaros",
+        "Other item name"
+      )
+      sellIn  <- Arbitrary.arbitrary[Int]
+      quality <- Arbitrary.arbitrary[Int]
     } yield Item(name, sellIn, quality)
   }
 
-  "new implementation" should "have the same result" in {
+  "new implementation" should "have the same result than the legacy one" in {
     check(forAll { items: Array[Item] =>
       {
         new QualityManager(items)
@@ -33,41 +37,73 @@ class QualityManagerImplementationProperties extends AnyFlatSpec with Checkers {
 
 object QualityManagerImplementationProperties {
   def updateQuality(items: Array[Item]): Array[Item] = {
+
     val updatedItems = ListBuffer[Item]()
 
-    for (i <- items.indices) {
-      if (!items(i).name.startsWith("a")) {
+    for (i <- 0 until items.length) {
+      var updatedItem = items(i)
+
+      if (
+        !items(i).name.equals("Aged Brie")
+        && !items(i).name.equals("Backstage passes to a TAFKAL80ETC concert")
+      ) {
         if (items(i).quality > 0) {
-          val item        = items(i)
-          val updatedItem = item.copy(quality = items(i).quality - 1)
-          updatedItems += updatedItem
+          if (!items(i).name.equals("Sulfuras, Hand of Ragnaros")) {
+            updatedItem = updatedItem.copy(quality = updatedItem.quality - 1)
+          }
         }
       } else {
         if (items(i).quality < 50) {
-          val item        = items(i)
-          val updatedItem = item.copy(quality = item.quality + 1)
-          updatedItems += updatedItem
+          updatedItem = updatedItem.copy(quality = updatedItem.quality + 1)
 
-          if (items(i).name.length == 4) {
+          if (
+            items(i).name.equals("Backstage passes to a TAFKAL80ETC concert")
+          ) {
             if (items(i).sellIn < 11) {
               if (items(i).quality < 50) {
-                val item        = items(i)
-                val updatedItem = item.copy(quality = item.quality + 1)
-                updatedItems += updatedItem
+                updatedItem.copy(quality = updatedItem.quality + 1)
               }
             }
 
             if (items(i).sellIn < 6) {
               if (items(i).quality < 50) {
-                val item        = items(i)
-                val updatedItem = item.copy(quality = item.quality + 1)
-                updatedItems += updatedItem
+                updatedItem.copy(quality = updatedItem.quality + 1)
               }
             }
           }
         }
       }
+
+      if (!items(i).name.equals("Sulfuras, Hand of Ragnaros")) {
+        updatedItem = updatedItem.copy(sellIn = updatedItem.sellIn - 1)
+      }
+
+      if (items(i).sellIn < 0) {
+        if (!items(i).name.equals("Aged Brie")) {
+          if (
+            !items(i).name.equals("Backstage passes to a TAFKAL80ETC concert")
+          ) {
+            if (items(i).quality > 0) {
+              if (!items(i).name.equals("Sulfuras, Hand of Ragnaros")) {
+                updatedItem = updatedItem.copy(sellIn = updatedItem.quality - 1)
+              }
+            }
+          } else {
+            updatedItem = updatedItem.copy(sellIn =
+              updatedItem.quality - updatedItem.quality
+            )
+          }
+        } else {
+          if (items(i).quality < 50) {
+            updatedItem = updatedItem.copy(sellIn = updatedItem.quality + 1)
+          }
+        }
+      }
+      updatedItems += updatedItem
     }
     updatedItems.toArray
   }
+
+  private def updateItem(item: Item, addQuality: Int): Item =
+    item.copy(quality = item.quality + addQuality)
 }
