@@ -15,6 +15,7 @@ class WithdrawPropertiesWithAccountBuilder
     extends AnyFlatSpec
     with Checkers
     with EitherValues {
+  // Centraliser la création de valide account ?
   "account balance" should "be decremented at least from the withdraw amount" in {
     checkProperty(
       (account, command) =>
@@ -59,6 +60,18 @@ class WithdrawPropertiesWithAccountBuilder
       (_, _, debitedAccount) =>
         debitedAccount.left.value
           .startsWith("Insufficient balance to withdraw")
+    )
+  }
+
+  "withdraw" should "be idempotent" in {
+    checkProperty(
+      (account, command) =>
+        account
+          .withEnoughMoney(command)
+          .withoutReachingMaxWithdrawal(command),
+      (_, command, debitedAccount) => {
+        AccountService.withdraw(debitedAccount.value, command) == debitedAccount
+      }
     )
   }
 
