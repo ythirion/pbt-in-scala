@@ -11,8 +11,6 @@ import quality.solution.QualityManagerImplementationProperties.{
 }
 import quality.{Item, QualityManager}
 
-import scala.collection.mutable.ListBuffer
-
 class QualityManagerImplementationProperties extends AnyFlatSpec with Checkers {
   implicit val itemGenerator: Arbitrary[Item] = Arbitrary {
     for {
@@ -30,13 +28,21 @@ class QualityManagerImplementationProperties extends AnyFlatSpec with Checkers {
   "new implementation" should "have the same result than the legacy one" in {
     check(forAll { items: Array[Item] =>
       {
-        new QualityManager(items)
-          .update() sameElements QualityManagerImplementationProperties
-          .updateQuality(
-            items
-          )
+        val oldImplementationResults = new QualityManager(items).update()
+        val newImplementationResults =
+          QualityManagerImplementationProperties.updateQuality(items)
+
+        print(oldImplementationResults, newImplementationResults)
+
+        oldImplementationResults sameElements newImplementationResults
       }
     })
+  }
+
+  private def print(oldImp: Array[Item], newImp: Array[Item]): Unit = {
+    for (i <- oldImp.indices) {
+      println(s"${oldImp(i)} / ${newImp(i)} -> ${oldImp(i) == newImp(i)}}")
+    }
   }
 }
 
@@ -46,68 +52,44 @@ object QualityManagerImplementationProperties {
   private val sulfuras    = "Sulfuras, Hand of Ragnaros"
 
   def updateQuality(items: Array[Item]): Array[Item] = {
-    val updatedItems = ListBuffer[Item]()
-
-    for (i <- items.indices) {
-      var updatedItem = items(i)
+    items.map { item =>
+      var updatedQuality = item.quality
+      var updatedSellIn  = item.sellIn
 
       if (
-        !items(i).name.equals(agedBrie)
-        && !items(i).name.equals(concertPass)
+        !item.name.equals(agedBrie)
+        && !item.name.equals(concertPass)
       ) {
-        if (items(i).quality > 0) {
-          if (!items(i).name.equals(sulfuras)) {
-            updatedItem = updatedItem.copy(quality = updatedItem.quality - 1)
+        if (updatedQuality > 0) {
+          if (!item.name.equals(sulfuras)) {
+            updatedQuality -= 1
           }
         }
       } else {
-        if (items(i).quality < 50) {
-          updatedItem = updatedItem.copy(quality = updatedItem.quality + 1)
+        if (updatedQuality < 50) {
+          updatedQuality += 1
 
-          if (items(i).name.equals(concertPass)) {
-            if (items(i).sellIn < 11) {
-              if (items(i).quality < 50) {
-                updatedItem.copy(quality = updatedItem.quality + 1)
+          if (item.name.equals(concertPass)) {
+            if (item.sellIn < 11) {
+              if (updatedQuality < 50) {
+                updatedQuality += 1
               }
             }
 
-            if (items(i).sellIn < 6) {
-              if (items(i).quality < 50) {
-                updatedItem.copy(quality = updatedItem.quality + 1)
+            if (item.sellIn < 6) {
+              if (updatedQuality < 50) {
+                updatedQuality += 1
               }
             }
           }
         }
       }
 
-      if (!items(i).name.equals(sulfuras)) {
-        updatedItem = updatedItem.copy(sellIn = updatedItem.sellIn - 1)
+      if (!item.name.equals(sulfuras)) {
+        updatedSellIn -= 1
       }
 
-      if (items(i).sellIn < 0) {
-        if (!items(i).name.equals(agedBrie)) {
-          if (!items(i).name.equals(concertPass)) {
-            if (items(i).quality > 0) {
-              if (!items(i).name.equals(sulfuras)) {
-                updatedItem = updatedItem.copy(sellIn = updatedItem.quality - 1)
-              }
-            }
-          } else {
-            updatedItem = updatedItem.copy(sellIn =
-              updatedItem.quality - updatedItem.quality
-            )
-          }
-        } else {
-          if (items(i).quality < 50) {
-            updatedItem = updatedItem.copy(sellIn = updatedItem.quality + 1)
-          }
-        }
-      }
-      updatedItems += updatedItem
+      item.copy(quality = updatedQuality, sellIn = updatedSellIn)
     }
-    updatedItems.toArray
   }
-
-  private def updateItem(item: Item, addQuality: Int): Item =
-    item.copy(quality = item.quality + addQuality)
 }
