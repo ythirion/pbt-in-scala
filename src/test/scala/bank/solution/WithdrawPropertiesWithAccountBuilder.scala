@@ -15,7 +15,6 @@ class WithdrawPropertiesWithAccountBuilder
     extends AnyFlatSpec
     with Checkers
     with EitherValues {
-  // Centraliser la création de valide account ?
   "account balance" should "be decremented at least from the withdraw amount" in {
     checkProperty(
       (account, command) =>
@@ -41,9 +40,10 @@ class WithdrawPropertiesWithAccountBuilder
 
   "withdraw" should "not be allowed when withdraw amount >= maxWithdrawal" in {
     checkProperty(
-      (account, command) =>
-        account
-          .withdrawAmountReachingMaxWithdrawal(command),
+      (
+          account,
+          command
+      ) => account.withdrawAmountReachingMaxWithdrawal(command),
       (_, _, debitedAccount) =>
         debitedAccount.left.value
           .startsWith("Amount exceeding your limit")
