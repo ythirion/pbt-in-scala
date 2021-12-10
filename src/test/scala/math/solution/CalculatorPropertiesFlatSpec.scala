@@ -1,7 +1,6 @@
 package math.solution
 
 import math.Calculator.add
-import math.solution.CalculatorProperties.property
 import org.scalacheck.Prop.forAll
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatestplus.scalacheck.Checkers
@@ -21,7 +20,7 @@ class CalculatorPropertiesFlatSpec extends AnyFlatSpec with Checkers {
 
   "0" should "be identity" in {
     check(forAll { (x: Int) =>
-      add(x, 0) != x
+      add(x, 0) == x
     })
   }
 }
