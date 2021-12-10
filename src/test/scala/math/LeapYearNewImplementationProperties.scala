@@ -7,9 +7,7 @@ import org.scalatestplus.scalacheck.Checkers
 class LeapYearNewImplementationProperties extends AnyFlatSpec with Checkers {
   "new implementation" should "have the same result" in {
     check(forAll { (year: Int) =>
-      {
-        true
-      }
+      true
     })
   }
 }

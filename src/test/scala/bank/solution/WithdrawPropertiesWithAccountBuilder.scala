@@ -71,9 +71,8 @@ class WithdrawPropertiesWithAccountBuilder
         account
           .withEnoughMoney(command)
           .withoutReachingMaxWithdrawal(command),
-      (_, command, debitedAccount) => {
+      (_, command, debitedAccount) =>
         AccountService.withdraw(debitedAccount.value, command) == debitedAccount
-      }
     )
   }
 }

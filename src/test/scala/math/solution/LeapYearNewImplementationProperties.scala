@@ -10,12 +10,8 @@ class LeapYearNewImplementationProperties extends AnyFlatSpec with Checkers {
   private val years: Gen[Int] = Gen.choose(-2000, 4000)
 
   "new implementation" should "have the same result" in {
-    check(
-      forAll(years) { year =>
-        {
-          LeapYear.isLeapYear(year) == NewLeapYear.isLeapYear(year)
-        }
-      }
-    )
+    check(forAll(years) { year =>
+      LeapYear.isLeapYear(year) == NewLeapYear.isLeapYear(year)
+    })
   }
 }

@@ -19,11 +19,9 @@ class RentalNewImplementationProperties extends AnyFlatSpec with Checkers {
   }
 
   "new implementation" should "have the same result" in {
-    check(forAll { (rentals: List[Rental]) =>
-      {
-        new RentalCalculator(rentals).calculateRental ==
-          NewRentalStatementPrinter.print(rentals)
-      }
+    check(forAll { rentals: List[Rental] =>
+      new RentalCalculator(rentals).calculateRental ==
+        NewRentalStatementPrinter.print(rentals)
     })
   }
 }
