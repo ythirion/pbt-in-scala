@@ -24,6 +24,7 @@ object PostalParcel {
 
 * To check our properties we need to either :
   * Filter our inputs with pre-condition :
+
 ```scala
   "delivery cost" should "be max when weight > maxWeight" in {
     check(forAll { weight: Double =>
@@ -33,7 +34,9 @@ object PostalParcel {
     })
   }
 ```
+
 * Or create custom generator
+
 ```scala
   private val minWeightGenerator = Gen.choose(0.01, maxWeight)
 
@@ -45,6 +48,7 @@ object PostalParcel {
 ```
 
 * Let's use pre-conditions for this example :
+
 ```scala
   "delivery cost" should "be max when weight > maxWeight" in {
     check(forAll { weight: Double =>
