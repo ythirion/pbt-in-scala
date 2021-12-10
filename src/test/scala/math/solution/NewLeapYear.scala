@@ -1,4 +1,4 @@
-package quality.solution
+package math.solution
 
 object NewLeapYear {
   def isLeapYear(year: Int): Boolean = {
